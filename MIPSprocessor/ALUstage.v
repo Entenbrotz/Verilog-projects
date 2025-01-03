@@ -1,12 +1,13 @@
-module alumux( B,rd2,immExt,ALUSrc); //B>PC
-input [31:0]rd2;
+// ALU multiplexer to select between immediate value or register value
+module alumux( B, rd2, immExt, ALUSrc); // B > PC
+input [31:0] rd2;
 input [31:0] immExt;
 input ALUSrc;
-output [31:0]B;
-assign B = ALUSrc?immExt:rd2;
+output [31:0] B;
+assign B = ALUSrc ? immExt : rd2;
 endmodule
 
-
+// Define opcode and ALU control signals as macros
 `define R           7'b0110011
 `define I           7'b0010011
 `define ILoading    7'b0000011
@@ -30,18 +31,21 @@ endmodule
 `define ALU_PASS_B  4'b1010
 `define ALU_DEFAULT 4'b1111
 
+// ALU module to perform arithmetic and logic operations
 module ALU(
-    output reg zero,                    
-    output reg [31:0] ALUResult,        
-    input [31:0] a, b,                  
-    input [3:0] ALUControl,             
-    input [6:0] opcode
+    output reg zero,                     // Zero flag for conditional operations
+    output reg [31:0] ALUResult,         // Result of ALU operation
+    input [31:0] a, b,                   // Inputs to ALU
+    input [3:0] ALUControl,              // Control signal to select ALU operation
+    input [6:0] opcode                   // Opcode for specific instruction behavior
 );
 
+    // Temporary signed and unsigned versions of inputs
     reg signed [31:0] signed_a, signed_b;
     reg [31:0] unsigned_a, unsigned_b;
 
     always @(*) begin
+        // Initialize variables
         signed_a = a;
         signed_b = b;
         unsigned_a = a;
@@ -49,6 +53,7 @@ module ALU(
         zero = 0;
         ALUResult = 0;
 
+        // ALU operation selection based on control signal
         case(ALUControl)
             `ALU_ADD: begin
                 case(opcode)
@@ -64,7 +69,7 @@ module ALU(
                     `R: ALUResult = a - b; // SUB operation
                     `B: begin              // Branch operations
                         ALUResult = a - b;
-                        zero = (ALUResult == 0);
+                        zero = (ALUResult == 0); // Set zero flag for branching
                     end
                     default: ALUResult = a - b;
                 endcase
@@ -87,7 +92,7 @@ module ALU(
                             `ALU_SLTU: ALUResult = (unsigned_a < unsigned_b) ? 32'd1 : 32'd0;
                             default: ALUResult = 32'd0;
                         endcase
-                        zero = (ALUResult == 1);
+                        zero = (ALUResult == 1); // Set zero flag for branching
                     end
                     default: ALUResult = (signed_a < signed_b) ? 32'd1 : 32'd0;
                 endcase
@@ -100,11 +105,10 @@ module ALU(
     end
 endmodule
 
-
-module PCtarget(PC,immExt,PCtrg);//B>PC
-input [31:0]PC;
-input [31:0]immExt;
-output [31:0]PCtrg;
-assign PCtrg = PC + 4 + immExt;
+// Program counter target calculation module
+module PCtarget(PC, immExt, PCtrg); // B > PC
+input [31:0] PC;
+input [31:0] immExt;
+output [31:0] PCtrg;
+assign PCtrg = PC + 4 + immExt; // Compute target PC value
 endmodule
-
