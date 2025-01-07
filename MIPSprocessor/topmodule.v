@@ -1,5 +1,7 @@
 module MIPS_TOP(
-input clk,reset
+input clk,
+input reset,
+output [31:0]Result
 );
 
 wire [31:0] instruction_address;
@@ -28,7 +30,7 @@ wire [31:0]PCtrg;
 wire [31:0]PC4;
 wire [31:0]ALUResult;
 wire [31:0]readData;
-wire [31:0]Result;
+
 
 Prgm_counter(
 .clk(clk),
