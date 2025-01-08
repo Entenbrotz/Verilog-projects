@@ -17,7 +17,7 @@ module InstDecoder(
     output reg [2:0] funct3,
     output reg [6:0] funct7,
     output reg [31:0] immv  // Sign-extended immediate (32-bits)
-    );
+);
     
     always @(*) begin
         // Initialize all outputs to 0
@@ -255,6 +255,7 @@ module ControlUnit(
             end
 
             default: begin
+                // Reset unused control signals
                 PCSrc = 0;
                 ResultSrc = 0;
                 MemWrite = 0;
@@ -267,7 +268,6 @@ module ControlUnit(
     end
 endmodule
 
-
 module ImmExtender(
     input [31:0] instruction,         // The 32-bit instruction
     input [2:0] ImmSrc,              // Control signal to specify the immediate type
@@ -277,29 +277,33 @@ module ImmExtender(
     always @(*) begin
         case (ImmSrc)
             3'b000: // I-Type (Immediate)
-                immExt = {{20{instruction[31]}}, instruction[31:20]}; // Sign-extend bits [31:20]
+                immExt = {{20{instruction[31]}}, instruction[31:20]}; // Sign-extend bits [31:20] to 32-bits
 
             3'b001: // S-Type (Store)
-                immExt = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; // Sign-extend bits [31:25] and [11:7]
+                immExt = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; // Sign-extend with bits from [31:25] and [11:7]
 
             3'b010: // B-Type (Branch)
-                immExt = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0}; // Sign-extend with bit shift
+                immExt = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0}; 
+                // Sign-extend and reconstruct the immediate for branch address calculation
+                // Immediate format for B-type: imm[12] imm[10:5] imm[4:1] imm[11] imm[0]
 
             3'b011: // J-Type (Jump)
-                immExt = {{11{instruction[31]}}, instruction[31], instruction[19:12], instruction[20], instruction[30:21], 1'b0}; // Sign-extend with bit shift
+                immExt = {{11{instruction[31]}}, instruction[31], instruction[19:12], instruction[20], instruction[30:21], 1'b0};
+                // Sign-extend and reconstruct the immediate for jump address calculation
+                // Immediate format for J-type: imm[20] imm[10:1] imm[11] imm[19:12] imm[30:21] imm[0]
 
             3'b100: // U-Type (LUI/AUIPC)
-                immExt = {instruction[31:12], 12'b0}; // Upper 20 bits, zero-extended
+                immExt = {instruction[31:12], 12'b0}; // Zero-extend the upper 20 bits, set lower 12 to 0
+                // Used in LUI (Load Upper Immediate) and AUIPC (Add Upper Immediate to PC)
 
             3'b101: // Immediate for shifts (optional, zero-extend)
-                immExt = {27'b0, instruction[24:20]}; // Zero-extend bits [24:20]
+                immExt = {27'b0, instruction[24:20]}; // Zero-extend the shift amount [24:20] into the lower bits
 
-            default: // Default to zero if ImmSrc is undefined
-                immExt = 32'b0;
+            default: // Default case if ImmSrc is undefined
+                immExt = 32'b0;  // Zero-extend if no valid ImmSrc is provided
         endcase
     end
 endmodule
-
 
 module registerfile (
     input clk,                // Clock signal
