@@ -1,42 +1,46 @@
 module top_module(
     input clk,
     input reset,
-    input PCSrc,            // Control signal for PC multiplexer
-    input [31:0] PCtrg,     // Target PC (e.g., for branch or jump)
-    output [31:0] instruction_out // Instruction output from memory
+    input PCSrc,                // Select for PC multiplexer
+    output [31:0] instruction_out, // Fetched instruction from instruction memory
+    output [31:0] PC            // Current PC
 );
-    wire [31:0] PC, PC_next, PC4;
-    wire [31:0] PC_next_mux;
 
-    // Program Counter (PC) to hold the current instruction address
-    Prgm_counter PC_counter (
+    // Internal signals
+    wire [31:0] PC_plus4;       // PC + 4 value
+    wire [31:0] PC_next;        // Final next PC value
+    wire [31:0] PC_target;      // Target address from branch/jump
+
+    // Instantiate Program Counter (Prgm_counter)
+    Prgm_counter pc_inst(
         .clk(clk),
         .reset(reset),
-        .PC_next(PC_next_mux),
+        .PC_next(PC_next),
         .PC(PC)
     );
 
-    // Instruction Memory to fetch instructions based on PC
-    instructionmem inst_mem (
+    // Instantiate Instruction Memory (instructionmem)
+    instructionmem imem_inst(
         .clk(clk),
         .reset(reset),
         .PC(PC),
         .instruction_out(instruction_out)
     );
 
-    // PC + 4 (for normal sequential address increment)
-    PCplus4 pc_plus4 (
+    // Instantiate PC + 4 Adder (PCplus4)
+    PCplus4 pcplus4_inst(
         .PC(PC),
-        .const4(32'd4), // Constant value 4 to increment PC by 4
-        .PC4(PC4)
+        .const4(32'd4),          // Constant 4 to increment PC
+        .PC4(PC_plus4)
     );
 
-    // PC Multiplexer to choose between PC + 4 or Target PC (for branching)
-    PCmux pc_mux (
-        .PC4(PC4),
+    // Instantiate PC MUX (PCmux) to select between PC + 4 and target address
+    PCmux pcmux_inst(
+        .PC4(PC_plus4),
         .PCSrc(PCSrc),
-        .PCtrg(PCtrg),
-        .PC_next(PC_next_mux)
+        .PC_next(PC_next),
+        .PCtrg(PC_target)
     );
+
 
 endmodule
