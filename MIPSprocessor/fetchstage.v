@@ -32,6 +32,12 @@ module instructionmem(clk, reset, PC, instruction_out);
     if (reset == 1'b1) begin
       for (k = 0; k < 64; k = k + 1)
         memory[k] = 32'b0; // Correct indexing
+
+        //Sample Instruction Codes
+        memory[0] = 32'h00500113;   
+        memory[1] = 32'h00C00193;   
+        memory[2] = 32'h003100B3; 
+        
     end
   end
 endmodule
