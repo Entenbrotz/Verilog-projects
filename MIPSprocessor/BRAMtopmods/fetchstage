@@ -1,0 +1,45 @@
+module top_module (
+    input clk,                   // Clock input
+    input rst,                   // Reset input
+    input en,
+    input PCSrc,   
+    input [31:0] PCtrg,                 // Enable signal
+    input [3:0] we,               // Write enable (4-bit for 32-bit data)
+    input  [31:0] data_in,         // Data input for writing
+    output [31:0] data_out        // Data output for reading
+);
+    wire [31:0] PC;            // Address input (32-bit wide)PC
+    wire [31:0] PC_next;
+    wire [31:0] PC4;
+    
+    Prgm_counter prgmcounter(
+    .clk(clk),
+    .reset(rst),
+    .PC_next(PC_next),
+    .PC(PC)
+);
+    PCplus4 pc4(
+    .PC(PC),
+    .const4(32'd4),
+    .PC4(PC4)
+    );
+    
+   PCmux PCmux(
+   .PC4(PC4),
+   .PCSrc(PCSrc),
+   .PC_next(PC_next),
+   .PCtrg(PC));
+
+    
+    // Instantiate BRAM
+    blk_mem_gen_0 bram_inst (
+        .clka(clk),                     // Connect clock
+        .rsta(rst),                     // Connect reset
+        .ena(en),                        // Enable BRAM
+        .wea(we),                        // Write enable
+        .addra(PC),                    // Address bus
+        .dina(data_in),                  // Data input
+        .douta(data_out)                 // Data output
+    );
+
+endmodule
