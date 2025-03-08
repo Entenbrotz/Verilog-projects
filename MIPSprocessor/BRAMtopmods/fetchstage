@@ -28,7 +28,7 @@ module top_module (
    .PC4(PC4),
    .PCSrc(PCSrc),
    .PC_next(PC_next),
-   .PCtrg(PC));
+   .PCtrg(PCtrg));
 
     
     // Instantiate BRAM
