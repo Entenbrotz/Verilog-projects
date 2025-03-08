@@ -1,3 +1,4 @@
+
 module Prgm_counter(
     input clk,
     input reset,
@@ -18,6 +19,30 @@ module Prgm_counter(
     end
 endmodule
 
+module PCplus4(
+    input [31:0] PC,
+    input [31:0] const4,
+    output [31:0] PC4
+    );
+    assign PC4 = PC+const4;
+endmodule
+
+module PCmux(PC4,PCSrc,PC_next,PCtrg);//A>PC+4,c>PCnext
+input PCSrc;
+input [31:0]PC4;
+input [31:0]PCtrg;
+output [31:0]PC_next;
+assign PC_next=PCSrc?PCtrg:PC4;
+endmodule
+
+
+
+
+
+
+
+
+/*
 module instructionmem(clk, reset, PC, instruction_out);
   input clk, reset;
   input [31:0] PC;
@@ -41,21 +66,6 @@ module instructionmem(clk, reset, PC, instruction_out);
     end
   end
 endmodule
-
-module PCplus4(
-    input [31:0] PC,
-    input [31:0] const4,
-    output [31:0] PC4
-    );
-    assign PC4 = PC+const4;
-endmodule
-
-module PCmux(PC4,PCSrc,PC_next,PCtrg);//A>PC+4,c>PCnext
-input PCSrc;
-input [31:0]PC4;
-input [31:0]PCtrg;
-output [31:0]PC_next;
-assign PC_next=PCSrc?PCtrg:PC4;
-endmodule
+*/
 
 
